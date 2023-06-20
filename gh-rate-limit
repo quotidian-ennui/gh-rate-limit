@@ -1,0 +1,32 @@
+#!/usr/bin/env bash
+set -eo pipefail
+
+GH_REST_API_VERSION="X-GitHub-Api-Version: 2022-11-28"
+GH_ACCEPT="Accept: application/vnd.github+json"
+export GH_PAGER="cat"
+
+usage() {
+  cat << EOF
+
+Usage: gh rate-limit
+
+Just shows you your current usage of the GH APIs and when your limit expires.
+
+Has some utility, but isn't that interesting
+
+EOF
+ exit 1
+}
+
+function gh_api() {
+  gh api -H "$GH_REST_API_VERSION" -H "$GH_ACCEPT" "$@"
+}
+
+while getopts 'h' flag; do
+    case "${flag}" in
+    h) usage ;;
+    *) usage ;;
+    esac
+done
+
+gh_api rate_limit | jq '.rate | { "limit": .limit, "remaining" : .remaining  , "resets" : .reset | strflocaltime("%H:%M:%S") }'
