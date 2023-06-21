@@ -1,0 +1,5 @@
+# CODEOWNERS should allow you to have PR's auto marked for your review.
+# https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/customizing-your-repository/about-code-owners
+
+#
+* @quotidian-ennui
