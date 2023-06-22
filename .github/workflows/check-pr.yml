@@ -4,6 +4,8 @@ on:
     branches:
       - main
 
+permissions: {}
+
 jobs:
   code-quality:
     runs-on: ubuntu-latest
@@ -21,3 +23,27 @@ jobs:
           pattern: gh-rate-limit
           fail_on_error: true
           github_token: ${{ secrets.github_token }}
+
+  dependabot-merge:
+    needs:
+      - code-quality
+    permissions:
+      contents: write
+      pull-requests: write
+    if: |
+      github.actor == 'dependabot[bot]'
+    runs-on: ubuntu-latest
+    steps:
+    - name: Find associated PR
+      uses: jwalton/gh-find-current-pr@v1
+      id: findpr
+      with:
+        github-token: ${{ github.token }}
+        state: open
+        sha: ${{ github.event.pull_request.head.sha || github.event.workflow_run.head_sha || github.sha }}
+    - name: merge-if-built
+      continue-on-error: true
+      uses: fastify/github-action-merge-dependabot@v3
+      with:
+        pr-number: ${{ steps.findpr.outputs.pr }}
+        target: minor
