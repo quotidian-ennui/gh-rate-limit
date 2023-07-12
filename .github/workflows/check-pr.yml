@@ -7,26 +7,52 @@ on:
 permissions: {}
 
 jobs:
-  code-quality:
+  shellcheck:
     runs-on: ubuntu-latest
     permissions:
       contents: read
       pull-requests: write
     steps:
       - uses: actions/checkout@v3
-        with:
-          fetch-depth: 0
-      - uses: crate-ci/typos@v1.15.10
-      - uses: reviewdog/action-shellcheck@v1
+      - name: shellcheck
+        uses: reviewdog/action-shellcheck@v1
         with:
           reporter: github-pr-review
           pattern: gh-rate-limit
           fail_on_error: true
           github_token: ${{ secrets.github_token }}
 
+  committed:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write
+    if: |
+      github.event_name == 'pull_request'
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+      - name: committed
+        uses: crate-ci/committed@v1.0.18
+        with:
+          args: --no-merge-commit
+
+  typos:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write
+    steps:
+      - uses: actions/checkout@v3
+      - name: typos
+        uses: crate-ci/typos@v1.15.10
+
   dependabot-merge:
     needs:
-      - code-quality
+      - shellcheck
+      - committed
+      - typos
     permissions:
       contents: write
       pull-requests: write

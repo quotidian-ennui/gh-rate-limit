@@ -10,23 +10,32 @@ usage() {
 
 Usage: gh rate-limit
 
-Just shows you your current usage of the GH APIs and when your limit expires.
+Options
+  -u : show 'used' rather than 'remaining'
+  -h : show this help, such as it is
 
+Just shows you your current usage of the GH APIs and when your limit expires.
 Has some utility, but isn't that interesting
 
 EOF
  exit 1
 }
 
-function gh_api() {
+gh_api() {
   gh api -H "$GH_REST_API_VERSION" -H "$GH_ACCEPT" "$@"
 }
 
-while getopts 'h' flag; do
+used=""
+while getopts 'hu' flag; do
     case "${flag}" in
+    u) used="true";;
     h) usage ;;
     *) usage ;;
     esac
 done
 
-gh_api rate_limit | jq '.rate | { "limit": .limit, "remaining" : .remaining  , "resets" : .reset | strflocaltime("%H:%M:%S") }'
+if [[ -z "$used" ]]; then
+  gh_api rate_limit | jq --raw-output '.resources | to_entries[] | {name: .key} + .value | "\(.name)  \(.remaining)/\(.limit)  \(.reset | strflocaltime("%H:%M:%S") )"' | column -t
+else
+  gh_api rate_limit | jq --raw-output '.resources | to_entries[] | {name: .key} + .value | "\(.name)  \(.used)/\(.limit)  \(.reset | strflocaltime("%H:%M:%S") )"' | column -t
+fi
