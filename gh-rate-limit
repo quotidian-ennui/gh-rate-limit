@@ -35,7 +35,7 @@ while getopts 'hu' flag; do
 done
 
 if [[ -z "$used" ]]; then
-  gh_api rate_limit | jq --raw-output '.resources | to_entries[] | {name: .key} + .value | "\(.name)  \(.remaining)/\(.limit)  \(.reset | strflocaltime("%H:%M:%S") )"' | column -t
+  gh_api rate_limit | jq --raw-output '.resources | to_entries[] | {name: .key} + .value | "\(.name)  \(.remaining)/\(.limit)  \(.reset | strflocaltime("%H:%M:%S") )"' | column -t -N "RESOURCE,REMAINING,RESETS"
 else
-  gh_api rate_limit | jq --raw-output '.resources | to_entries[] | {name: .key} + .value | "\(.name)  \(.used)/\(.limit)  \(.reset | strflocaltime("%H:%M:%S") )"' | column -t
+  gh_api rate_limit | jq --raw-output '.resources | to_entries[] | {name: .key} + .value | "\(.name)  \(.used)/\(.limit)  \(.reset | strflocaltime("%H:%M:%S") )"' | column -t -N  "RESOURCE,USAGE,RESETS"
 fi
