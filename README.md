@@ -1,4 +1,4 @@
-# gh-approve-deploy
+# gh-rate-limit
 
 This is an extension for [GitHub CLI](https://cli.github.com/) that just shows you your existing rate limits and when it resets
 
