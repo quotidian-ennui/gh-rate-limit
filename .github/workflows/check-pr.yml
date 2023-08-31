@@ -61,7 +61,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - name: Find associated PR
-      uses: jwalton/gh-find-current-pr@v1
+      uses: jwalton/gh-find-current-pr@v1.3.2
       id: findpr
       with:
         github-token: ${{ github.token }}
@@ -69,7 +69,7 @@ jobs:
         sha: ${{ github.event.pull_request.head.sha || github.event.workflow_run.head_sha || github.sha }}
     - name: merge-if-built
       continue-on-error: true
-      uses: fastify/github-action-merge-dependabot@v3
+      uses: fastify/github-action-merge-dependabot@v3.9.1
       with:
         pr-number: ${{ steps.findpr.outputs.pr }}
         target: minor
