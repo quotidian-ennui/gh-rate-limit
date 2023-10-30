@@ -46,7 +46,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: typos
-        uses: crate-ci/typos@v1.16.20
+        uses: crate-ci/typos@v1.16.21
 
   dependabot-merge:
     needs:
