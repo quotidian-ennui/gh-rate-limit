@@ -3,6 +3,7 @@ on:
   pull_request:
     branches:
       - main
+    types: [opened, synchronize, reopened, edited]
 
 permissions: {}
 
@@ -12,13 +13,20 @@ jobs:
     permissions:
       contents: read
       pull-requests: write
+    if: |
+      github.event_name == 'pull_request' &&
+      github.event.action != 'edited'
     steps:
-      - uses: actions/checkout@v4
+      - name: checkout
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          persist-credentials: false
       - name: shellcheck
-        uses: reviewdog/action-shellcheck@v1
+        uses: reviewdog/action-shellcheck@22f96e34e9185b642c5567cc26d1df952f5c9d10 # v1.28.0
         with:
           reporter: github-pr-review
-          pattern: gh-rate-limit
+          pattern: |
+            gh-squash-merge
           fail_on_error: true
           github_token: ${{ secrets.github_token }}
 
@@ -28,48 +36,67 @@ jobs:
       contents: read
       pull-requests: write
     if: |
-      github.event_name == 'pull_request'
+      github.event_name == 'pull_request' &&
+      github.event.action != 'edited'
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
         with:
+          persist-credentials: false
           fetch-depth: 0
       - name: committed
-        uses: crate-ci/committed@v1.1.5
+        uses: crate-ci/committed@8ac2dfd223ba5e6252409440ba5a37671b2e99b8 # v1.1.2
         with:
           args: --no-merge-commit
+
+  # Check the PR title conforms to 'conventional'
+  pr-title:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: read
+    if: |
+      github.event_name == 'pull_request' &&
+      (github.event.action == 'edited' || github.event.action == 'opened')
+    steps:
+      - run: |
+          regexp="^(build|ci|docs|feat|fix|perf|refactor|style|test|chore|deps)(\(.+\))?(!)?: "
+          title="${{ github.event.pull_request.title }}"
+          if [[ ! $title =~ $regexp ]]; then
+            echo "PR Title is not 'conventional' matching $regexp" >> "$GITHUB_STEP_SUMMARY"
+            exit 1
+          fi
 
   typos:
     runs-on: ubuntu-latest
     permissions:
       contents: read
       pull-requests: write
+    if: |
+      github.event_name == 'pull_request' &&
+      github.event.action != 'edited'
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          persist-credentials: false
       - name: typos
-        uses: crate-ci/typos@v1.28.4
+        uses: crate-ci/typos@9d890159570d5018df91fedfa40b4730cd4a81b1 # v1.28.4
 
-  dependabot-merge:
+  dependabot-merge-trigger:
     needs:
       - shellcheck
       - committed
       - typos
+      - pr-title
     permissions:
       contents: write
-      pull-requests: write
+      pull-requests: read
     if: |
-      github.actor == 'dependabot[bot]'
+      github.actor == 'dependabot[bot]' &&
+      github.event_name == 'pull_request'
     runs-on: ubuntu-latest
+    name: PR Trigger
     steps:
-    - name: Find associated PR
-      uses: jwalton/gh-find-current-pr@v1.3.3
-      id: findpr
-      with:
-        github-token: ${{ github.token }}
-        state: open
-        sha: ${{ github.event.pull_request.head.sha || github.event.workflow_run.head_sha || github.sha }}
-    - name: merge-if-built
-      continue-on-error: true
-      uses: fastify/github-action-merge-dependabot@v3.11.0
-      with:
-        pr-number: ${{ steps.findpr.outputs.pr }}
-        target: minor
+      - name: dispatch
+        uses: quotidian-ennui/actions-olio/pr-trigger@main
+        with:
+          event_type: "dependabot-merge"

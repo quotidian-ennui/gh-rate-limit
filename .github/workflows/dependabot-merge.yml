@@ -1,0 +1,32 @@
+name: dependabot-merge
+run-name: Merge dependabot-pr (${{ github.event.client_payload.detail.pull_request }})
+on:
+  repository_dispatch:
+    types:
+      - dependabot-merge
+
+# A push via dependabot basically means that the github actions
+# have been upgraded;
+jobs:
+  actions_merge:
+    runs-on: ubuntu-latest
+    name: Dependabot Merge (action changes)
+    steps:
+      - name: Checkout branch
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          ref: ${{ github.event.client_payload.base.ref }}
+      - name: "Create Token"
+        uses: actions/create-github-app-token@5d869da34e18e7287c1daad50e0b8ea0f506ce69 # v1.11.0
+        id: app-token
+        with:
+          app-id: ${{ vars.WORKFLOW_UPDATE_APP_ID }}
+          private-key: ${{ secrets.WORKFLOW_UPDATE_KEY }}
+          owner: ${{ github.repository_owner }}
+          repositories: "${{ github.event.repository.name}}"
+      - name: Dependabot Merge
+        id: dependabot_merge
+        uses: quotidian-ennui/actions-olio/dependabot-merge@main
+        with:
+          token: ${{ steps.app-token.outputs.token }}
+
