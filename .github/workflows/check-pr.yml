@@ -79,7 +79,7 @@ jobs:
         with:
           persist-credentials: false
       - name: typos
-        uses: crate-ci/typos@7436548694def3314aacd93ed06c721b1f91ea04 # v1.37.2
+        uses: crate-ci/typos@80c8a4945eec0f6d464eaf9e65ed98ef085283d1 # v1.38.1
 
   dependabot-merge-trigger:
     needs:
