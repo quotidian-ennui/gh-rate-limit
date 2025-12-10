@@ -11,11 +11,15 @@ jobs:
   actions_merge:
     runs-on: ubuntu-latest
     name: Dependabot Merge (action changes)
+    permissions:
+      contents: write
+      pull-requests: write
+      checks: write
     steps:
       - name: Checkout branch
         uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6.0.1
         with:
-          persist-credentials: false        
+          persist-credentials: false
           ref: ${{ github.event.client_payload.base.ref }}
       - name: "Create Token"
         uses: actions/create-github-app-token@29824e69f54612133e76f7eaac726eef6c875baf # v2.2.1
@@ -30,4 +34,3 @@ jobs:
         uses: quotidian-ennui/actions-olio/dependabot-merge@main
         with:
           token: ${{ steps.app-token.outputs.token }}
-

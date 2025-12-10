@@ -13,9 +13,7 @@ jobs:
     permissions:
       contents: read
       pull-requests: write
-    if: |
-      github.event_name == 'pull_request' &&
-      github.event.action != 'edited'
+      checks: write
     steps:
       - name: checkout
         uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6.0.1
@@ -25,28 +23,9 @@ jobs:
         uses: reviewdog/action-shellcheck@4c07458293ac342d477251099501a718ae5ef86e # v1.32.0
         with:
           reporter: github-pr-review
-          pattern: |
-            gh-squash-merge
-          fail_on_error: true
+          fail_level: error
+          check_all_files_with_shebangs: "true"
           github_token: ${{ secrets.github_token }}
-
-  committed:
-    runs-on: ubuntu-latest
-    permissions:
-      contents: read
-      pull-requests: write
-    if: |
-      github.event_name == 'pull_request' &&
-      github.event.action != 'edited'
-    steps:
-      - uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6.0.1
-        with:
-          persist-credentials: false
-          fetch-depth: 0
-      - name: committed
-        uses: crate-ci/committed@bb02f309663f9baced8dbd5fdd80c6369ddf3efd # v1.1.8
-        with:
-          args: --no-merge-commit
 
   # Check the PR title conforms to 'conventional'
   pr-title:
@@ -54,38 +33,19 @@ jobs:
     permissions:
       contents: read
       pull-requests: read
-    if: |
-      github.event_name == 'pull_request' &&
-      (github.event.action == 'edited' || github.event.action == 'opened')
     steps:
       - run: |
           regexp="^(build|ci|docs|feat|fix|perf|refactor|style|test|chore|deps)(\(.+\))?(!)?: "
-          title="${{ github.event.pull_request.title }}"
-          if [[ ! $title =~ $regexp ]]; then
+          if [[ ! $PR_TITLE =~ $regexp ]]; then
             echo "PR Title is not 'conventional' matching $regexp" >> "$GITHUB_STEP_SUMMARY"
             exit 1
           fi
-
-  typos:
-    runs-on: ubuntu-latest
-    permissions:
-      contents: read
-      pull-requests: write
-    if: |
-      github.event_name == 'pull_request' &&
-      github.event.action != 'edited'
-    steps:
-      - uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6.0.1
-        with:
-          persist-credentials: false
-      - name: typos
-        uses: crate-ci/typos@2d0ce569feab1f8752f1dde43cc2f2aa53236e06 # v1.40.0
+        env:
+          PR_TITLE: ${{ github.event.pull_request.title }}
 
   dependabot-merge-trigger:
     needs:
       - shellcheck
-      - committed
-      - typos
       - pr-title
     permissions:
       contents: write

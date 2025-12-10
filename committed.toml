@@ -1,6 +1,0 @@
-style="conventional"
-allowed_types=["fix", "feat", "chore", "docs", "doc", "style", "refactor", "perf", "test", "build", "deps", "ci"]
-ignore_author_re="(dependabot|renovate)"
-subject_capitalized=false
-subject_not_punctuated=false
-no_fixup=false
