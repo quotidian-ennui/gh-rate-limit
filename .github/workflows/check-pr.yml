@@ -8,55 +8,10 @@ on:
 permissions: {}
 
 jobs:
-  shellcheck:
-    runs-on: ubuntu-latest
-    permissions:
-      contents: read
-      pull-requests: write
-      checks: write
-    steps:
-      - name: checkout
-        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
-        with:
-          persist-credentials: false
-      - name: shellcheck
-        uses: reviewdog/action-shellcheck@4c07458293ac342d477251099501a718ae5ef86e # v1.32.0
-        with:
-          reporter: github-pr-review
-          fail_level: error
-          check_all_files_with_shebangs: "true"
-          github_token: ${{ secrets.github_token }}
-
-  # Check the PR title conforms to 'conventional'
-  pr-title:
-    runs-on: ubuntu-latest
-    permissions:
-      contents: read
-      pull-requests: read
-    steps:
-      - run: |
-          regexp="^(build|ci|docs|feat|fix|perf|refactor|style|test|chore|deps)(\(.+\))?(!)?: "
-          if [[ ! $PR_TITLE =~ $regexp ]]; then
-            echo "PR Title is not 'conventional' matching $regexp" >> "$GITHUB_STEP_SUMMARY"
-            exit 1
-          fi
-        env:
-          PR_TITLE: ${{ github.event.pull_request.title }}
-
-  dependabot-merge-trigger:
-    needs:
-      - shellcheck
-      - pr-title
+  check-pr:
+    uses: quotidian-ennui/workflows-olio/.github/workflows/check-pr-with-trigger.yml@main
+    secrets: inherit
     permissions:
       contents: write
-      pull-requests: read
-    if: |
-      github.actor == 'dependabot[bot]' &&
-      github.event_name == 'pull_request'
-    runs-on: ubuntu-latest
-    name: PR Trigger
-    steps:
-      - name: dispatch
-        uses: quotidian-ennui/actions-olio/pr-trigger@main
-        with:
-          event_type: "dependabot-merge"
+      pull-requests: write
+      checks: write

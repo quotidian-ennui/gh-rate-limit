@@ -5,32 +5,11 @@ on:
     types:
       - dependabot-merge
 
+permissions: {}
+
 # A push via dependabot basically means that the github actions
 # have been upgraded;
 jobs:
   actions_merge:
-    runs-on: ubuntu-latest
-    name: Dependabot Merge (action changes)
-    permissions:
-      contents: write
-      pull-requests: write
-      checks: write
-    steps:
-      - name: Checkout branch
-        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
-        with:
-          persist-credentials: false
-          ref: ${{ github.event.client_payload.base.ref }}
-      - name: "Create Token"
-        uses: actions/create-github-app-token@f8d387b68d61c58ab83c6c016672934102569859 # v3.0.0
-        id: app-token
-        with:
-          app-id: ${{ vars.WORKFLOW_UPDATE_APP_ID }}
-          private-key: ${{ secrets.WORKFLOW_UPDATE_KEY }}
-          owner: ${{ github.repository_owner }}
-          repositories: "${{ github.event.repository.name}}"
-      - name: Dependabot Merge
-        id: dependabot_merge
-        uses: quotidian-ennui/actions-olio/dependabot-merge@main
-        with:
-          token: ${{ steps.app-token.outputs.token }}
+    uses: quotidian-ennui/workflows-olio/.github/workflows/action-dependabot-merge.yml@main
+    secrets: inherit
