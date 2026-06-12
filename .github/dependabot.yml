@@ -9,15 +9,13 @@ updates:
       prefix: "deps(actions): "
     open-pull-requests-limit: 20
     schedule:
-      interval: "daily"
-      time: "05:13"
-      timezone: Europe/London
+      interval: "cron"
+      cronjob: "12 02 * * *"
     rebase-strategy: disabled
     cooldown:
       default-days: 3
       exclude:
-        - "quotidian-ennui/workflows-olio/*"
-        - "quotidian-ennui/actions-olio/*"
+        - "quotidian-ennui/*"
     groups:
       workflows-olio:
         patterns:
