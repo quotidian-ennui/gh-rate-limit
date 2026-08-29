@@ -9,7 +9,7 @@ permissions: {}
 
 jobs:
   check-pr:
-    uses: quotidian-ennui/workflows-olio/.github/workflows/check-pr-with-trigger.yml@d1d56e91660ddd4d83ff65054d4d6efc5adfc77b # v2.2.5
+    uses: quotidian-ennui/workflows-olio/.github/workflows/check-pr-with-trigger.yml@da5bf91c178d83ccfc784f0db2b4c0d62180ca77 # v2.2.6
     permissions:
       contents: write
       pull-requests: write
