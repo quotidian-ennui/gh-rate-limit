@@ -11,7 +11,7 @@ permissions: {}
 # have been upgraded;
 jobs:
   actions_merge:
-    uses: quotidian-ennui/workflows-olio/.github/workflows/action-dependabot-merge.yml@5fe3301a3906df8e2310b10c9eb814a72ab670f2 # v2.2.11
+    uses: quotidian-ennui/workflows-olio/.github/workflows/action-dependabot-merge.yml@c320b9338c82c82ab6edaf6feb89e0a8ed3fa22e # v2.2.12
     with:
       client_id: ${{ vars.WORKFLOW_UPDATE_CLIENT_ID }}
     secrets:
